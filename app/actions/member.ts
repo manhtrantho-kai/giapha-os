@@ -92,61 +92,164 @@ export async function updateDescendantGenerationsAction(
     }
   }
 
-  // 1. Fetch all parent-child relationships
+  // 1. Fetch current person's saved generation
+  const { data: currentPerson, error: personError } = await supabase
+    .from('persons')
+    .select('id, generation')
+    .eq('id', personId)
+    .single()
+
+  if (personError || !currentPerson) {
+    return { error: t('generationsFetchError') }
+  }
+
+  const baseGen = currentPerson.generation
+
+  // 2. Fetch parent-child and marriage relationships
   const { data: relationships, error: relError } = await supabase
     .from('relationships')
     .select('person_a, person_b, type')
-    .in('type', ['biological_child', 'adopted_child'])
+    .in('type', ['biological_child', 'adopted_child', 'marriage'])
 
   if (relError) {
     console.error('Error fetching relationships:', relError)
     return { error: t('relationshipsFetchError') }
   }
 
-  // Build children map (person_a is parent, person_b is child)
+  // Build children and spouses maps
   const childrenMap = new Map<string, string[]>()
+  const spousesMap = new Map<string, string[]>()
+
   relationships.forEach((r) => {
-    if (!childrenMap.has(r.person_a)) childrenMap.set(r.person_a, [])
-    childrenMap.get(r.person_a)!.push(r.person_b)
+    if (r.type === 'marriage') {
+      if (!spousesMap.has(r.person_a)) spousesMap.set(r.person_a, [])
+      if (!spousesMap.has(r.person_b)) spousesMap.set(r.person_b, [])
+      spousesMap.get(r.person_a)!.push(r.person_b)
+      spousesMap.get(r.person_b)!.push(r.person_a)
+    } else if (r.type === 'biological_child' || r.type === 'adopted_child') {
+      if (!childrenMap.has(r.person_a)) childrenMap.set(r.person_a, [])
+      childrenMap.get(r.person_a)!.push(r.person_b)
+    }
   })
 
-  // 2. Find all descendants using BFS
-  const descendants = new Set<string>()
-  const queue = [personId]
-  while (queue.length > 0) {
-    const current = queue.shift()!
-    const children = childrenMap.get(current) || []
-    for (const child of children) {
-      if (!descendants.has(child)) {
-        descendants.add(child)
-        queue.push(child)
+  // 3. Level-by-level BFS traversal
+  // targetGenMap stores personId -> expected generation
+  const targetGenMap = new Map<string, number>()
+  const visited = new Set<string>()
+  visited.add(personId)
+
+  // Level 0: Spouses of personId (vợ chồng thì bằng đời với mình)
+  const directSpouses = spousesMap.get(personId) || []
+  for (const s of directSpouses) {
+    if (!visited.has(s)) {
+      visited.add(s)
+      if (baseGen != null) {
+        targetGenMap.set(s, Math.max(1, baseGen))
       }
     }
   }
 
-  if (descendants.size === 0) return { success: true }
-  const descendantIds = Array.from(descendants)
+  // Parents for the next generation level: personId and their spouses
+  let currentLevelParents = [personId, ...directSpouses]
+  let currentDepth = 0
 
-  // 3. Fetch current generations of descendants
+  while (currentLevelParents.length > 0) {
+    currentDepth++
+    const levelGeneration =
+      baseGen != null ? Math.max(1, baseGen + currentDepth) : null
+
+    // Find all children born to the parents at current level (con cái = đời mình + currentDepth)
+    const nextLevelChildren: string[] = []
+    for (const parentId of currentLevelParents) {
+      const children = childrenMap.get(parentId) || []
+      for (const childId of children) {
+        if (!visited.has(childId)) {
+          visited.add(childId)
+          nextLevelChildren.push(childId)
+          if (levelGeneration != null) {
+            targetGenMap.set(childId, levelGeneration)
+          }
+        }
+      }
+    }
+
+    if (nextLevelChildren.length === 0) break
+
+    // Find all spouses of the children at this level (dâu/rể thì bằng đời với người phối ngẫu)
+    const nextLevelSpouses: string[] = []
+    for (const childId of nextLevelChildren) {
+      const sps = spousesMap.get(childId) || []
+      for (const spId of sps) {
+        if (!visited.has(spId)) {
+          visited.add(spId)
+          nextLevelSpouses.push(spId)
+          if (levelGeneration != null) {
+            targetGenMap.set(spId, levelGeneration)
+          }
+        }
+      }
+    }
+
+    // Next level parents include both children and their spouses
+    currentLevelParents = [...nextLevelChildren, ...nextLevelSpouses]
+  }
+
+  // If baseGen is null (no generation specified), fallback to shifting existing values by generationDelta
+  if (baseGen == null) {
+    const otherIds = Array.from(visited).filter((id) => id !== personId)
+    if (otherIds.length === 0) return { success: true }
+
+    const { data: fallbackPersons, error: fallbackError } = await supabase
+      .from('persons')
+      .select('id, generation')
+      .in('id', otherIds)
+
+    if (fallbackError) {
+      console.error('Error fetching fallback persons:', fallbackError)
+      return { error: t('generationsFetchError') }
+    }
+
+    let hasError = false
+    for (const p of fallbackPersons) {
+      if (p.generation != null) {
+        const newGen = Math.max(1, p.generation + generationDelta)
+        const { error: updateError } = await supabase
+          .from('persons')
+          .update({ generation: newGen })
+          .eq('id', p.id)
+        if (updateError) hasError = true
+      }
+    }
+
+    if (hasError) return { error: t('descendantGenerationUpdateError') }
+
+    revalidatePath('/dashboard/members')
+    revalidatePath('/dashboard/tree')
+    return { success: true }
+  }
+
+  const idsToUpdate = Array.from(targetGenMap.keys())
+  if (idsToUpdate.length === 0) return { success: true }
+
+  // 4. Fetch current generations to only update those that differ
   const { data: persons, error: personsError } = await supabase
     .from('persons')
     .select('id, generation')
-    .in('id', descendantIds)
+    .in('id', idsToUpdate)
 
   if (personsError) {
     console.error('Error fetching persons:', personsError)
     return { error: t('generationsFetchError') }
   }
 
-  // 4. Update each descendant's generation
+  // 5. Update each target person's generation
   let hasError = false
-  // Batch processing can be done by looping
   for (const person of persons) {
-    if (person.generation !== null && person.generation !== undefined) {
-      const newGen = Math.max(1, person.generation + generationDelta)
+    const expectedGen = targetGenMap.get(person.id)
+    if (expectedGen !== undefined && person.generation !== expectedGen) {
       const { error: updateError } = await supabase
         .from('persons')
-        .update({ generation: newGen })
+        .update({ generation: expectedGen })
         .eq('id', person.id)
 
       if (updateError) {
@@ -159,6 +262,9 @@ export async function updateDescendantGenerationsAction(
   if (hasError) {
     return { error: t('descendantGenerationUpdateError') }
   }
+
+  revalidatePath('/dashboard/members')
+  revalidatePath('/dashboard/tree')
 
   return { success: true }
 }

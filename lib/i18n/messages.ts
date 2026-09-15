@@ -440,9 +440,9 @@ export const messages = {
     leaveBlank: 'Để trống nếu không rõ',
     generation: 'Thuộc đời thứ',
     generationPlaceholder: 'Ví dụ: 1, 2, 3...',
-    updateDescendant: 'Cập nhật đời cho các thế hệ sau',
+    updateDescendant: 'Cập nhật đời cho các thế hệ sau và dâu/rể',
     updateDescendantDescription:
-      'Tự động điều chỉnh đời của con, cháu... tương ứng với thay đổi này.',
+      'Tự động điều chỉnh đời của con, cháu, dâu, rể... tương ứng với thay đổi này.',
     avatar: 'Ảnh đại diện',
     invalidImageType: 'Ảnh phải có định dạng JPG, PNG, GIF hoặc WebP.',
     imageTooLarge: 'Ảnh không được vượt quá 2MB.',
@@ -1231,9 +1231,9 @@ export const messages = {
     leaveBlank: 'Leave blank if unknown',
     generation: 'Generation',
     generationPlaceholder: 'Example: 1, 2, 3...',
-    updateDescendant: 'Update generations for descendants',
+    updateDescendant: 'Update generations for descendants and spouses',
     updateDescendantDescription:
-      'Automatically adjust the generations of children and grandchildren to match this change.',
+      'Automatically adjust the generations of children, grandchildren, and spouses/in-laws to match this change.',
     avatar: 'Profile photo',
     invalidImageType: 'The photo must be JPG, PNG, GIF, or WebP.',
     imageTooLarge: 'The photo must not exceed 2MB.',

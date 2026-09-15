@@ -1,6 +1,19 @@
--- ==========================================
+-- ============================================================
 -- GIAPHA-OS DATABASE SCHEMA
--- ==========================================
+-- ============================================================
+-- CÁCH CHẠY KHỞI TẠO DATABASE:
+--
+-- 1. Chạy trên Supabase Dashboard (SQL Editor):
+--    • Dev Project:  https://supabase.com/dashboard/project/gcniumlwkcwnjyaojupy/sql
+--    • Prod Project: https://supabase.com/dashboard/project/lkjwafogdfgvpbdjytis/sql
+--    (Copy toàn bộ nội dung file này dán vào SQL Editor rồi bấm "Run")
+--
+-- 2. Chạy qua dòng lệnh psql:
+--    • Dev:
+--      psql "postgresql://postgres:Kaitran2003%40@db.gcniumlwkcwnjyaojupy.supabase.co:5432/postgres" -f docs/schema.sql
+--    • Prod:
+--      psql "postgresql://postgres:ybDTZUfHtvp6ar%2B@db.lkjwafogdfgvpbdjytis.supabase.co:5432/postgres" -f docs/schema.sql
+-- ============================================================
 
 -- EXTENSIONS
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;

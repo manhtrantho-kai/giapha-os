@@ -1,3 +1,4 @@
+import config from '@/app/config'
 import GalleryClient from '@/components/GalleryClient'
 import { getServerTranslations } from '@/lib/i18n/server'
 import { getIsAdmin, getSupabase } from '@/utils/supabase/queries'
@@ -6,7 +7,7 @@ import { getGalleryStoragePath } from '@/utils/supabase/storage-path'
 export async function generateMetadata() {
   const { t } = await getServerTranslations()
   return {
-    title: `${t('galleryTitle')} | Gia Phả OS`,
+    title: `${t('galleryTitle')} | ${config.siteName}`,
     description: t('galleryDescription')
   }
 }

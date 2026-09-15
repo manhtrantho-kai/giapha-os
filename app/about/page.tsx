@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Info, Mail, ShieldAlert } from 'lucide-react'
 import Link from 'next/link'
 
+import config from '@/app/config'
 import Footer from '@/components/Footer'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useI18n } from '@/lib/i18n/I18nProvider'
@@ -39,8 +40,8 @@ export default function AboutPage() {
 
             <div className='max-w-none'>
               <p className='mb-8 text-sm leading-relaxed text-stone-600'>
-                <strong className='text-stone-800'>Gia Phả OS</strong>{' '}
-                {t('aboutDescription').replace('Gia Phả OS ', '')}
+                <strong className='text-stone-800'>{config.siteName}</strong>{' '}
+                {t('aboutDescription').replace(/^(Gia Phả OS|Gia Phả Họ Trần Thọ)\s+/, '')}
               </p>
 
               <div className='mt-8 mb-4 flex items-center gap-3 border-t border-stone-100 pt-8'>

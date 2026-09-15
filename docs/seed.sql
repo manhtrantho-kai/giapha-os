@@ -4,9 +4,18 @@
 -- 4 Đời, 27 thành viên, 43 quan hệ, 3 sự kiện mẫu —
 -- đủ quan hệ để test mọi tính năng (kể cả trang Sự kiện)
 -- ============================================================
--- CÁCH DÙNG
---   • Supabase SQL Editor: dán toàn bộ file rồi Run.
---   • psql: psql "$SUPABASE_DB_URL" -f docs/seed.sql
+-- CÁCH DÙNG:
+--   1. Supabase SQL Editor:
+--      • Dev:  https://supabase.com/dashboard/project/gcniumlwkcwnjyaojupy/sql
+--      • Prod: https://supabase.com/dashboard/project/lkjwafogdfgvpbdjytis/sql
+--      (Dán toàn bộ file rồi bấm Run)
+--
+--   2. Dòng lệnh psql:
+--      • Dev:
+--        psql "postgresql://postgres:Kaitran2003%40@db.gcniumlwkcwnjyaojupy.supabase.co:5432/postgres" -f docs/seed.sql
+--      • Prod:
+--        psql "postgresql://postgres:ybDTZUfHtvp6ar%2B@db.lkjwafogdfgvpbdjytis.supabase.co:5432/postgres" -f docs/seed.sql
+--
 -- File này KHÔNG nằm trong migration runner — chỉ chạy thủ công.
 -- CẢNH BÁO: Xóa sạch persons, relationships, person_details_private
 --   và custom_events hiện có. KHÔNG đụng profiles, auth, gallery.
