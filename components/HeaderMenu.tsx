@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Database,
   GitMerge,
-  Info,
   Network,
   UserCircle,
   Users
@@ -161,13 +160,6 @@ export default function HeaderMenu() {
               )}
 
               <div className='mx-4 my-1 h-px bg-stone-100' />
-              <Link
-                href='/about'
-                onClick={() => setIsOpen(false)}
-                className='flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-stone-700 transition-colors hover:bg-rose-50 hover:text-rose-700'>
-                <Info className='size-4' />
-                {t('about')}
-              </Link>
               <LogoutButton />
             </div>
           </motion.div>

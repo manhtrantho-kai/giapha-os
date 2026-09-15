@@ -1,27 +1,22 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Info, KeyRound, Mail, Shield, UserPlus } from 'lucide-react'
+import { ArrowLeft, KeyRound, Mail, Shield, UserPlus } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
 
-import config from '@/app/config'
 import Footer from '@/components/Footer'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { useI18n } from '@/lib/i18n/I18nProvider'
 import { createClient } from '@/utils/supabase/client'
 
-const ssoGuideUrl =
-  'https://github.com/homielab/giapha-os#đăng-nhập-bằng-google-và-facebook'
+const ssoGuideUrl = ''
 
 export default function LoginPage() {
   const { t } = useI18n()
-  const isDemo =
-    typeof window !== 'undefined' &&
-    window.location.hostname === config.demoDomain
-  const [email, setEmail] = useState(isDemo ? 'giaphaos@homielab.com' : '')
-  const [password, setPassword] = useState(isDemo ? 'giaphaos' : '')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -36,11 +31,6 @@ export default function LoginPage() {
   const ssoDisabled = process.env.NEXT_PUBLIC_DISABLE_SSO !== 'false'
 
   const handleOAuthLogin = async (provider: 'google' | 'facebook') => {
-    if (isDemo) {
-      setError(t('demoOAuthNotice'))
-      return
-    }
-
     setLoading(true)
     setError(null)
     setSuccessMessage(null)
@@ -164,12 +154,6 @@ export default function LoginPage() {
 
         <div className='flex shrink-0 items-center gap-2 sm:gap-3'>
           <LanguageSwitcher />
-          <Link
-            href='/about'
-            className='group flex items-center gap-2 rounded-full border border-stone-200 bg-white/60 px-4 py-2.5 text-sm font-medium text-stone-500 transition-all duration-300 hover:border-stone-300 hover:text-stone-900 sm:px-5'>
-            <Info className='size-4 transition-transform group-hover:scale-110' />
-            {t('about')}
-          </Link>
         </div>
       </header>
 
@@ -193,16 +177,6 @@ export default function LoginPage() {
             <p className='mt-3 text-sm font-medium text-stone-500'>
               {isLogin ? t('loginDescription') : t('signUpDescription')}
             </p>
-            {isDemo && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className='mt-4 rounded-xl border border-amber-200/60 bg-amber-50 p-3'>
-                <p className='text-sm font-medium text-amber-800'>
-                  {t('demoNotice')}
-                </p>
-              </motion.div>
-            )}
           </div>
 
           <form className='relative z-10 space-y-5' onSubmit={handleSubmit}>
@@ -417,10 +391,6 @@ export default function LoginPage() {
               <button
                 type='button'
                 onClick={() => {
-                  if (isLogin && isDemo) {
-                    setError(t('demoLoginNotice'))
-                    return
-                  }
                   setIsLogin(!isLogin)
                   setError(null)
                   setSuccessMessage(null)

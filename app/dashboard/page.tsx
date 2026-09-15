@@ -8,7 +8,6 @@ import {
   Flower2,
   GitMerge,
   Image as ImageIcon,
-  Info,
   Network,
   Star,
   Users
@@ -99,15 +98,6 @@ export default async function DashboardLaunchpad() {
       bgColor: 'bg-pink-50',
       borderColor: 'border-pink-200/60',
       hoverColor: 'hover:border-pink-400 '
-    },
-    {
-      title: t('about'),
-      description: t('aboutDescriptionShort'),
-      icon: <Info className='size-8 text-stone-600' />,
-      href: '/about',
-      bgColor: 'bg-stone-50',
-      borderColor: 'border-stone-200/60',
-      hoverColor: 'hover:border-stone-400 '
     }
   ]
 
